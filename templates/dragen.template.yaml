@@ -78,7 +78,7 @@ Mappings:
     AMI:
       DRAGEN: dragen-completesuite-*
     us-east-1:
-      DRAGEN: ami-0b200106f98d8acd2
+      DRAGEN: ami-0be774adf94c2531a
     us-west-2:
       DRAGEN: ami-07a7d63c4157030dc
     eu-west-2:

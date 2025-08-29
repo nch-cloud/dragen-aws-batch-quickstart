@@ -116,12 +116,30 @@ Resources:
   BatchSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow https
+      GroupDescription: Allow https, http, dns, and ntp
       VpcId: !Ref VpcId
       SecurityGroupEgress:
       - IpProtocol: tcp
         FromPort: 443
         ToPort: 443
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: udp
+        FromPort: 53
+        ToPort: 53
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: udp
+        FromPort: 123
+        ToPort: 123
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: icmp
+        FromPort: -1
+        ToPort: -1
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: -1
         CidrIp: 0.0.0.0/0
   BatchServiceRole:
     Type: AWS::IAM::Role
@@ -216,13 +234,6 @@ Resources:
                 Value: "Dragen"
         UserData: !Base64
           Fn::Sub: |
-              Content-Type: multipart/mixed; boundary="==BOUNDARY=="
-              MIME-Version: 1.0
-
-              --==BOUNDARY==
-              MIME-Version: 1.0
-              Content-Type: text/x-shellscript; charset="us-ascii"
-
               #!/bin/bash
 
               function qs_retry_command() {
@@ -244,6 +255,7 @@ Resources:
 
               }
 
+              # ECS configuration
               echo ECS_DISABLE_IMAGE_CLEANUP=false>>/etc/ecs/ecs.config
               echo ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=2m>>/etc/ecs/ecs.config
               echo ECS_IMAGE_CLEANUP_INTERVAL=10m>>/etc/ecs/ecs.config
@@ -251,14 +263,24 @@ Resources:
               echo ECS_NUM_IMAGES_DELETE_PER_CYCLE=5>>/etc/ecs/ecs.config
               echo ECS_RESERVED_MEMORY=32>>/etc/ecs/ecs.config
               echo ECS_AVAILABLE_LOGGING_DRIVERS='["json-file","awslogs"]'>>/etc/ecs/ecs.config
-              qs_retry_command 10 yum downgrade -y docker-ce-25.0.5-1.el8 docker-ce-cli-25.0.5-1.el8 docker-ce-rootless-extras-25.0.5-1.el8
-              qs_retry_command 10 systemctl restart docker
+              echo ECS_ENABLE_TASK_IAM_ROLE=true>>/etc/ecs/ecs.config
+
+              # Docker and ECS setup
+              qs_retry_command 10 yum install -y docker
+              qs_retry_command 10 systemctl enable docker
+              qs_retry_command 10 systemctl start docker
               qs_retry_command 10 docker stop ecs-agent
               qs_retry_command 10 docker rm ecs-agent
               qs_retry_command 10 docker pull amazon/amazon-ecs-agent:latest
               qs_retry_command 10 docker run --name ecs-agent --detach=true --restart=on-failure:10 --volume=/var/run:/var/run --volume=/var/log/ecs/:/log --volume=/var/lib/ecs/data:/data --volume=/etc/ecs:/etc/ecs --net=host --env-file=/etc/ecs/ecs.config amazon/amazon-ecs-agent:latest
 
-              --==BOUNDARY==--
+              # Add route for ECS task metadata endpoint
+              ip route add 169.254.170.2/32 dev docker0
+
+              # Install and start SSM agent
+              qs_retry_command 10 yum install -y amazon-ssm-agent
+              qs_retry_command 10 systemctl enable amazon-ssm-agent
+              qs_retry_command 10 systemctl start amazon-ssm-agent
   DragenComputeEnvironmentSpot:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
@@ -331,6 +353,7 @@ Resources:
               - "sts:AssumeRole"
       ManagedPolicyArns:
       - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+      - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
   DragenInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
