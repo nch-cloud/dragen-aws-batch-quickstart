@@ -15,6 +15,8 @@ This is a bit of a funny deployment in that certain files from the git repo need
 
 As an example, I have created a "quickstart-templates" prefix in the "patrick-dragen-bucket". Then you need to recursively copy the "templates/" and "app/" directories from the git tree in that "quickstart-template" prefix. The CloudFormation install will ask for this bucket + prefix as part of setting its parameters.
 
+The template you want to upload to CloudFormation is **dragen-aws-batch-quickstart/templates/dragen.template.yaml**
+
 ## CloudFormation Settings
 
 I'm not sure how needed this is, but this is a screenshot of all the VPC endpoints that I have configured in Patrick's dev.
