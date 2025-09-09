@@ -300,6 +300,11 @@ Resources:
                 - "ecs-tasks.amazonaws.com"
             Action:
               - "sts:AssumeRole"
+      ManagedPolicyArns:
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-read-clinical
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-read-research
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-write-clinical
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-write-research              
   DragenInstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -315,6 +320,10 @@ Resources:
       ManagedPolicyArns:
       - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
       - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-read-clinical
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-read-research
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-write-clinical
+      - arn:aws:iam::257995316808:policy/shared-acct-s3-write-research
   DragenInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
