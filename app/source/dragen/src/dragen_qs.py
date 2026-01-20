@@ -151,6 +151,8 @@ class DragenJob(object):
         self.ref_s3_uri = None
         self.ref_s3_uri_index = -1
 
+        self.local_bcl_path = None      # Create local directory for bcl-convert-only
+
         self.output_s3_url = None       # Determine from the --output-directory field
         self.output_s3_index = -1
         self.output_dir = None          # Create local output directory for current dragen process
@@ -305,9 +307,24 @@ class DragenJob(object):
     def parse_input_args(self):
         if not self.input_dir:
             self.input_dir = self.DEFAULT_DATA_FOLDER + 'inputs/'
-
+        printf(f'[DEBUG] Processing arguments: {self.orig_args}')
         for i, arg in enumerate(self.orig_args):
             prev_arg = self.orig_args[i - 1] if i > 0 else None
+
+            if prev_arg == '--bcl-input-directory':
+                    s3_parts = arg.replace('s3://', '').split('/')
+                    s3_key_base = '/'.join(s3_parts[1:])
+                    # Handle if directory is a tar
+                    if s3_key_base.endswith('.tar'):
+                        # Handle tar file creating its own directory structure
+                        filename = s3_key_base.split('/')[-1].split('.tar')[0]
+                        self.local_bcl_path = self.input_dir + filename
+                    else:
+                        s3_key = s3_key_base.rstrip('/')
+                        # Store local path for BCL directory
+                        self.local_bcl_path = self.input_dir + s3_key 
+                    print(f'Using the following path {self.local_bcl_path}')
+
 
             if prev_arg in self.exclusion:
                 if prev_arg == '--ref-dir':
@@ -336,18 +353,35 @@ class DragenJob(object):
 
         if not self.input_dir:
             self.input_dir = self.DEFAULT_DATA_FOLDER + 'inputs/'
-
+        
+        
         for cloud_file in self.cloud_files:
             filename = cloud_file.split('?')[0].split('/')[-1]
-            target_path = self.input_dir + str(filename)
-            print(f'downloading {target_path}/{filename}')
-
+            is_tar_file = re.search(r'\.tar(\.gz)?$', filename)
             s3_valid, s3_bucket, s3_key = get_s3_bucket_key(cloud_file)
+            target_path = self.input_dir + str(filename)
+            print(f'downloading {target_path}')
+            
             if s3_valid:
                 self.download_s3_object(s3_bucket, s3_key, target_path)
             else:
                 # Try to download using http
                 self.exec_url_download(cloud_file, self.input_dir)
+            if is_tar_file:
+                tar_extract_dir = self.input_dir
+
+                # Ensure it exists
+                if not os.path.exists(target_path):
+                    raise FileNotFoundError(f'Downloaded file not found: {target_path}')
+    
+                # Extract
+                try:
+                    with tarfile.open(target_path, mode="r:*") as tar:
+                        print('Extracting tarball...')
+                        safe_extract(tar, path=tar_extract_dir)
+                    print(f'Successfully extracted to {tar_extract_dir}')
+                except Exception as e:
+                    raise RuntimeError(f'Error extracting tar file: {e}')
 
         return
 
@@ -483,6 +517,13 @@ class DragenJob(object):
 
         # If board is in bad state, run dragen_reset before next process starts
         self.check_board_state()
+        
+        # If BCL convert, set the correct path for where BCL folder is downloaded
+        for i, arg in enumerate(self.new_args):
+            if i > 0 and self.new_args[i-1] == '--bcl-input-directory':
+                self.new_args[i] = self.local_bcl_path
+                self.DEFAULT_DATA_FOLDER += 'bclconvertonly/'
+                break
         # Setup unique output directory
         self.create_output_dir()
         # Add some internally defined parameters
@@ -573,6 +614,7 @@ def main():
 
     printf('Downloading misc inputs (csv, bed)')
     dragen_job.download_inputs()
+
     printf('Run Analysis job')
     dragen_job.run()
 

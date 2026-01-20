@@ -86,13 +86,20 @@ def s3_download_dir(bucket, src_dir, tgt_dir, region='us-east-1', nosign=False):
         client = boto3.client('s3', region, config=Config(signature_version=UNSIGNED))
     else:
         client = boto3.client('s3', region)
-    response = client.list_objects(Bucket=bucket, Prefix=src_dir)
 
-    if not response['Contents']:
+    paginator = client.get_paginator('list_objects_v2')
+    page_iterator = paginator.paginate(Bucket=bucket, Prefix=src_dir)
+
+    all_objects = []
+    for obj in page_iterator:
+        if 'Contents' in obj:
+            all_objects.extend(obj['Contents'])
+
+    if not all_objects:
         return 0
 
     # Filter out any results that are "dirs" by checking for ending '/'
-    object_list = [x for x in response['Contents'] if not x['Key'].endswith('/')]
+    object_list = [x for x in all_objects if not x['Key'].endswith('/')]
 
     # To avoid a race condition for parallel downloads, make sure each has a directory created
     # - Create the full dir path of each object and make sure the dir exists
@@ -176,8 +183,8 @@ def s3_upload(abs_src_path, bucket, key):
 def _s3_upload_files_recursively(dir_path, bucket, obj_key, s3_client, transfer_client):
     filenames = [fpath for dirpath in os.walk(dir_path) for fpath in
                  glob(os.path.join(dirpath[0], '*'))]
-    # upload a finite number of files for safety
-    filenames = filenames[:100]
+    # upload a finite number of files for safety - prevents bcl convert file upload for larger
+    #filenames = filenames[:100]
     tot_bytes = 0
 
     # make sure there is a trailing '/' in obj_key to indicate it is 'root' and not actual keyname
@@ -196,7 +203,17 @@ def _s3_upload_file(file_path, bucket, obj_key, s3_client, transfer_client):
     # Check if the key is a 'root' instead of full key name
     if obj_key.endswith('/'):
         name_only = file_path.rsplit('/', 1)[1]  # strip out the leading directory path
-        obj_key = obj_key + name_only
+        if 'bclconvertonly' in file_path and name_only.endswith('.fastq.gz'):
+            project = file_path.strip('/').split('/')[-2]
+            sample_name_index = name_only.rfind('_S')
+            if sample_name_index != -1:
+                sample_name = name_only[0:sample_name_index]
+            else:
+                lane_index = name_only.rfind('_L0')
+                sample_name = name_only[0:lane_index]
+            obj_key = obj_key + project + '/' + sample_name + '/' + name_only
+        else:
+            obj_key = obj_key + name_only
     transfer_client.upload_file(
         file_path,
         bucket,
