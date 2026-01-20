@@ -364,9 +364,14 @@ class DragenJob(object):
             
             if s3_valid:
                 self.download_s3_object(s3_bucket, s3_key, target_path)
+                # Download .crai index for .cram files
+                if filename.endswith('.cram'):
+                    self.download_s3_object(s3_bucket, s3_key + '.crai', target_path + '.crai')
             else:
                 # Try to download using http
                 self.exec_url_download(cloud_file, self.input_dir)
+                if filename.endswith('.cram'):
+                    self.exec_url_download(cloud_file + '.crai', self.input_dir)
             if is_tar_file:
                 tar_extract_dir = self.input_dir
 
@@ -382,7 +387,6 @@ class DragenJob(object):
                     print(f'Successfully extracted to {tar_extract_dir}')
                 except Exception as e:
                     raise RuntimeError(f'Error extracting tar file: {e}')
-
         return
 
     ########################################################################################
