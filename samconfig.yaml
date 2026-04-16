@@ -1,57 +1,16 @@
 version: 0.1
-staging:
-  deploy:
-    parameters:
-      stack_name: dragen-staging-444
-      region: us-east-1
-      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
-      parameter_overrides:
-        - EnvironmentName=staging
-        - DragenVersion=444
-        - DragenLibVersion=4.4.4
-        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-        - KeyPairName=igm-dragen-us-east-1 
-        - MaxvCpus=1000
-      tags:
-        - IGM App=dragen-batch
-        - IGM Group=both
-        - IGM Environment=staging
-        - IGM Billing=strategic
-        - IGM Sub-Billing=dragen-batch
-prod:
-  deploy:
-    parameters:
-      stack_name: dragen-prod-444
-      region: us-east-1
-      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
-      parameter_overrides:
-        - EnvironmentName=prod
-        - DragenVersion=444
-        - DragenLibVersion=4.4.4
-        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-        - KeyPairName=igm-dragen-us-east-1 
-        - MaxvCpus=1000
-      tags:
-        - IGM App=dragen-batch
-        - IGM Group=both
-        - IGM Environment=prod
-        - IGM Billing=strategic
-        - IGM Sub-Billing=dragen-batch
-
-# Uncomment to deploy DRAGEN 4.5.4:
-# staging-454:
+# staging:
 #   deploy:
 #     parameters:
-#       stack_name: dragen-staging-454
+#       stack_name: dragen-staging-444
 #       region: us-east-1
 #       capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
 #       parameter_overrides:
 #         - EnvironmentName=staging
-#         - DragenVersion=454
-#         - DragenLibVersion=4.5.4
-#         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+#         - DragenVersion=444
+#         - DragenLibVersion=4.4.4
 #         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-#         - KeyPairName=igm-dragen-batch
+#         - KeyPairName=igm-dragen-us-east-1 
 #         - MaxvCpus=1000
 #       tags:
 #         - IGM App=dragen-batch
@@ -59,20 +18,18 @@ prod:
 #         - IGM Environment=staging
 #         - IGM Billing=strategic
 #         - IGM Sub-Billing=dragen-batch
-#
-# prod-454:
+# prod:
 #   deploy:
 #     parameters:
-#       stack_name: dragen-prod-454
+#       stack_name: dragen-prod-444
 #       region: us-east-1
 #       capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
 #       parameter_overrides:
 #         - EnvironmentName=prod
-#         - DragenVersion=454
-#         - DragenLibVersion=4.5.4
-#         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+#         - DragenVersion=444
+#         - DragenLibVersion=4.4.4
 #         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-#         - KeyPairName=igm-dragen-batch
+#         - KeyPairName=igm-dragen-us-east-1 
 #         - MaxvCpus=1000
 #       tags:
 #         - IGM App=dragen-batch
@@ -80,3 +37,46 @@ prod:
 #         - IGM Environment=prod
 #         - IGM Billing=strategic
 #         - IGM Sub-Billing=dragen-batch
+
+# Uncomment to deploy DRAGEN 4.5.4:
+staging-454:
+  deploy:
+    parameters:
+      stack_name: dragen-staging-454
+      region: us-east-1
+      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+      parameter_overrides:
+        - EnvironmentName=staging
+        - DragenVersion=454
+        - DragenLibVersion=4.5.4
+        - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+        - KeyPairName=igm-dragen-us-east-1
+        - MaxvCpus=1000
+      tags:
+        - IGM App=dragen-batch
+        - IGM Group=both
+        - IGM Environment=staging
+        - IGM Billing=strategic
+        - IGM Sub-Billing=dragen-batch
+
+prod-454:
+  deploy:
+    parameters:
+      stack_name: dragen-prod-454
+      region: us-east-1
+      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+      parameter_overrides:
+        - EnvironmentName=prod
+        - DragenVersion=454
+        - DragenLibVersion=4.5.4
+        - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+        - KeyPairName=igm-dragen-us-east-1
+        - MaxvCpus=1000
+      tags:
+        - IGM App=dragen-batch
+        - IGM Group=both
+        - IGM Environment=prod
+        - IGM Billing=strategic
+        - IGM Sub-Billing=dragen-batch
