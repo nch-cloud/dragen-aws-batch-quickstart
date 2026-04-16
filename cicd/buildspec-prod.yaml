@@ -1,0 +1,28 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - aws codeartifact login --tool pip --repository igm-pypi-store --domain igm --domain-owner 257995316808 --region us-east-2
+      - pip install nch-devops-cli==0.2.0.post2.dev0+749d37d
+  build:
+    commands:
+      - echo Entered the build and deploy phase...
+      - nch-devops-cli codebuild-pre-deploy-get-parameters --sam-config-env $ENV
+      - nch-devops-cli codebuild-pre-deploy-check-cf-stack-set --sam-config-env $ENV --template-file templates/dragen.template.yaml
+      # Zip dragen wrapper scripts and upload to stack's artifact S3 bucket
+      - ARTIFACT_BUCKET=$(aws cloudformation describe-stacks --stack-name $(jq -r '.stack_name' parameters.json 2>/dev/null || echo "dragen-prod-444") --query 'Stacks[0].Outputs[?OutputKey==`ArtifactBucket`].OutputValue' --output text 2>/dev/null || echo "")
+      - cd app/source/dragen
+      - zip -r ../../../dragen.zip .
+      - cd ../../..
+      - |
+        if [ -n "$ARTIFACT_BUCKET" ]; then
+          aws s3 cp dragen.zip s3://$ARTIFACT_BUCKET/dragen-aws-batch-quickstart/app/packages/dragen/dragen.zip
+        fi
+artifacts:
+  files:
+    - samconfig.yaml
+    - cicd/*
+    - templates/*
+    - parameters.json

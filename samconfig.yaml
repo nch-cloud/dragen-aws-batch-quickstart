@@ -1,0 +1,78 @@
+version: 0.1
+staging:
+  deploy:
+    parameters:
+      stack_name: dragen-staging-444
+      region: us-east-1
+      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+      parameter_overrides:
+        - EnvironmentName=staging
+        - DragenVersion=444
+        - DragenLibVersion=4.4.4
+        - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
+        - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+      tags:
+        - IGM App=dragen-batch
+        - IGM Group=both
+        - IGM Environment=staging
+        - IGM Billing=strategic
+        - IGM Sub-Billing=dragen-batch
+prod:
+  deploy:
+    parameters:
+      stack_name: dragen-prod-444
+      region: us-east-1
+      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+      parameter_overrides:
+        - EnvironmentName=prod
+        - DragenVersion=444
+        - DragenLibVersion=4.4.4
+        - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
+        - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+      tags:
+        - IGM App=dragen-batch
+        - IGM Group=both
+        - IGM Environment=prod
+        - IGM Billing=strategic
+        - IGM Sub-Billing=dragen-batch
+
+# Uncomment to deploy DRAGEN 4.5.4:
+# staging-454:
+#   deploy:
+#     parameters:
+#       stack_name: dragen-staging-454
+#       region: us-east-1
+#       capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+#       parameter_overrides:
+#         - EnvironmentName=staging
+#         - DragenVersion=454
+#         - DragenLibVersion=4.5.4
+#         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+#         - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
+#         - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+#       tags:
+#         - IGM App=dragen-batch
+#         - IGM Group=both
+#         - IGM Environment=staging
+#         - IGM Billing=strategic
+#         - IGM Sub-Billing=dragen-batch
+#
+# prod-454:
+#   deploy:
+#     parameters:
+#       stack_name: dragen-prod-454
+#       region: us-east-1
+#       capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+#       parameter_overrides:
+#         - EnvironmentName=prod
+#         - DragenVersion=454
+#         - DragenLibVersion=4.5.4
+#         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+#         - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
+#         - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+#       tags:
+#         - IGM App=dragen-batch
+#         - IGM Group=both
+#         - IGM Environment=prod
+#         - IGM Billing=strategic
+#         - IGM Sub-Billing=dragen-batch

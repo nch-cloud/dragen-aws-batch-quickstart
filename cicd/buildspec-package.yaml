@@ -1,0 +1,18 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - aws codeartifact login --tool pip --repository igm-pypi-store --domain igm --domain-owner 257995316808 --region us-east-2
+      - pip install nch-devops-cli==0.2.0.post2.dev0+749d37d
+  build:
+    commands:
+      - echo Entered the build and package phase...
+      - echo Syncing templates and app to S3 artifacts bucket...
+      - aws s3 sync templates/ s3://nch-igm-cloudformation-artifacts-257995316808-us-east-1/dragen-aws-batch-quickstart/templates/
+      - aws s3 sync app/ s3://nch-igm-cloudformation-artifacts-257995316808-us-east-1/dragen-aws-batch-quickstart/app/
+artifacts:
+  files:
+    - samconfig.yaml
+    - cicd/*

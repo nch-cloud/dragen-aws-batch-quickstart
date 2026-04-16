@@ -21,11 +21,12 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
     - Label:
-        default: Network Configuration
+        default: Environment and Version Configuration
       Parameters:
-      - VPCID
-      - PrivateSubnet1ID
-      - PrivateSubnet2ID
+      - EnvironmentName
+      - DragenVersion
+      - DragenLibVersion
+      - DragenAmiOverride
     - Label:
         default: DRAGEN Quick Start Configuration
       Parameters:
@@ -44,14 +45,16 @@ Metadata:
       - QSS3BucketRegion
       - QSS3KeyPrefix
     ParameterLabels:
+      EnvironmentName:
+        default: Environment Name
+      DragenVersion:
+        default: DRAGEN Version Identifier
+      DragenLibVersion:
+        default: DRAGEN Library Version
+      DragenAmiOverride:
+        default: DRAGEN AMI Override
       KeyPairName:
         default: Key Pair Name
-      PrivateSubnet1ID:
-        default: Private Subnet 1 ID
-      PrivateSubnet2ID:
-        default: Private Subnet 2 ID
-      VPCID:
-        default: VPC ID
       QSS3BucketRegion:
         default: Quick Start S3 bucket region
       QSS3KeyPrefix:
@@ -87,6 +90,25 @@ Mappings:
       DRAGEN: ami-0ffc6f405569e4661
 
 Parameters:
+  EnvironmentName:
+    Type: String
+    Description: The name of the deployment environment (e.g., staging, prod).
+    AllowedPattern: '[a-zA-Z0-9-]+'
+    ConstraintDescription: Environment name can include alphanumeric characters and hyphens only.
+  DragenVersion:
+    Type: String
+    Default: '444'
+    Description: DRAGEN version identifier used in resource naming (e.g., 444, 454).
+    AllowedPattern: '[a-zA-Z0-9-]+'
+    ConstraintDescription: DRAGEN version can include alphanumeric characters and hyphens only.
+  DragenLibVersion:
+    Type: String
+    Default: '4.4.4'
+    Description: Exact DRAGEN shared library version for the libdragen.so mount path.
+  DragenAmiOverride:
+    Type: String
+    Default: ''
+    Description: Optional AMI ID override for the DRAGEN compute environment. If empty, uses the AWSAMIRegionMap lookup.
   InstanceType:
     Type: String
     Description: Amazon EC2 instance type. DRAGEN requires an FPGA to run, so the instance type must be in the F1 instance family.
@@ -94,15 +116,6 @@ Parameters:
     AllowedValues:
     - f2.6xlarge
     - f2.12xlarge
-  VPCID:
-    Type: AWS::EC2::VPC::Id
-    Description: The ID of your existing VPC (e.g., vpc-0343606e).
-  PrivateSubnet1ID:
-    Type: AWS::EC2::Subnet::Id
-    Description: The ID of the private subnet in Availability Zone 1 in your existing VPC (e.g., subnet-a0246dcd).
-  PrivateSubnet2ID:
-    Type: AWS::EC2::Subnet::Id
-    Description: The ID of the private subnet in Availability Zone 2 in your existing VPC (e.g., subnet-b58c3d67).
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
@@ -175,15 +188,6 @@ Rules:
           - Fn::RefAll: AWS::EC2::KeyPair::KeyName
           - ''
       AssertDescription: All key pair parameters must not be empty
-  SubnetsInVPC:
-    Assertions:
-    - Assert:
-        Fn::EachMemberIn:
-        - Fn::ValueOfAll:
-          - AWS::EC2::Subnet::Id
-          - VpcId
-        - Fn::RefAll: AWS::EC2::VPC::Id
-      AssertDescription: All subnets must be in the VPC
   DRAGENSupportedRegionRule:
     Assertions:
     - Assert:
@@ -199,6 +203,7 @@ Rules:
 
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia']
+  HasAmiOverride: !Not [!Equals [!Ref DragenAmiOverride, '']]
 
 Resources:
   DockerBucketRepository:
@@ -261,13 +266,16 @@ Resources:
         - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
           S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        DragenVersion: !Ref DragenVersion
+        DragenLibVersion: !Ref DragenLibVersion
         GenomicsS3Bucket: !Ref GenomicsS3Bucket
         DragenDockerImage: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DockerBucketRepository.Outputs.Repository}:dragen
-        VpcId: !Ref VPCID
-        SubnetIds: !Sub "${PrivateSubnet1ID}, ${PrivateSubnet2ID}"
+        VpcId: '{{resolve:ssm:/igm/inf/vpc_id}}'
+        SubnetIds: '{{resolve:ssm:/igm/inf/protected_subnet_a}}, {{resolve:ssm:/igm/inf/protected_subnet_b}}'
         BidPercentage: !Ref BidPercentage
         InstanceType: !Ref InstanceType
-        ImageId: !FindInMap [ AWSAMIRegionMap, !Ref "AWS::Region", DRAGEN ]
+        ImageId: !If [HasAmiOverride, !Ref DragenAmiOverride, !FindInMap [ AWSAMIRegionMap, !Ref "AWS::Region", DRAGEN ]]
         Ec2KeyPair: !Ref KeyPairName
         MinvCpus: !Ref MinvCpus
         MaxvCpus: !Ref MaxvCpus

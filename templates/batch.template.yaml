@@ -7,6 +7,12 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
+          default: Environment and Version Configuration
+        Parameters:
+        - EnvironmentName
+        - DragenVersion
+        - DragenLibVersion
+      - Label:
           default: DRAGEN parameteres
         Parameters:
         - GenomicsS3Bucket
@@ -25,6 +31,12 @@ Metadata:
         - InstanceType
         - RetryNumber
     ParameterLabels:
+      EnvironmentName:
+        default: Environment Name
+      DragenVersion:
+        default: DRAGEN Version Identifier
+      DragenLibVersion:
+        default: DRAGEN Library Version
       GenomicsS3Bucket:
         default: Genomics Data Bucket
       RetryNumber:
@@ -52,6 +64,21 @@ Metadata:
 
 
 Parameters:
+  EnvironmentName:
+    Type: String
+    Description: The name of the deployment environment (e.g., staging, prod).
+    AllowedPattern: '[a-zA-Z0-9-]+'
+    ConstraintDescription: Environment name can include alphanumeric characters and hyphens only.
+  DragenVersion:
+    Type: String
+    Default: '444'
+    Description: DRAGEN version identifier used in resource naming (e.g., 444, 454).
+    AllowedPattern: '[a-zA-Z0-9-]+'
+    ConstraintDescription: DRAGEN version can include alphanumeric characters and hyphens only.
+  DragenLibVersion:
+    Type: String
+    Default: '4.4.4'
+    Description: Exact DRAGEN shared library version for the libdragen.so mount path.
   GenomicsS3Bucket:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
     ConstraintDescription: S3 genomics bucket name can include numbers, lowercase
@@ -262,7 +289,7 @@ Resources:
   DragenComputeEnvironmentSpot:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: dragen-spot
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-spot
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
@@ -285,7 +312,7 @@ Resources:
   DragenComputeEnvironmentOnDemand:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: dragen-ondemand
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-ondemand
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
@@ -317,6 +344,51 @@ Resources:
                 - "ecs-tasks.amazonaws.com"
             Action:
               - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/shared-acct-s3-read-clinical
+        - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/shared-acct-s3-read-research
+        - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/shared-acct-s3-write-clinical
+        - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:policy/shared-acct-s3-write-research
+      Policies:
+        - PolicyName: nch-igm-fastq-clinical-dragen-bucket
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:DeleteObject"
+                  - "s3:GetBucketLocation"
+                  - "s3:ListBucket"
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-fastq-clinical-dragen"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-fastq-clinical-dragen/*"
+        - PolicyName: S3ReadWritePolicyJobExpanded
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetBucketLocation"
+                  - "s3:ListBucket"
+                  - "s3:ListBucketVersions"
+                  - "s3:GetObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:PutObject"
+                  - "s3:ListMultipartUploadParts"
+                  - "s3:AbortMultipartUpload"
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-churchill-resources"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-churchill-resources/*"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-dragen-nv"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-dragen-nv/*"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-fastq-clinical"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-fastq-clinical/*"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-research-projects"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-research-projects/*"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-primary-data"
+                  - !Sub "arn:${AWS::Partition}:s3:::nch-igm-primary-data/*"
   DragenInstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -340,7 +412,7 @@ Resources:
   DragenJobQueue:
     Type: AWS::Batch::JobQueue
     Properties:
-      JobQueueName: dragen-queue
+      JobQueueName: !Sub dragen-${EnvironmentName}-${DragenVersion}-queue
       Priority: 100
       State: ENABLED
       ComputeEnvironmentOrder:
@@ -351,7 +423,7 @@ Resources:
   DragenJobDefinition:
     Type: AWS::Batch::JobDefinition
     Properties:
-      JobDefinitionName: dragen
+      JobDefinitionName: !Sub dragen-${EnvironmentName}-${DragenVersion}
       Type: container
       RetryStrategy:
         Attempts: !Ref RetryNumber
@@ -373,7 +445,7 @@ Resources:
           - ContainerPath: "/var/lib/edico"
             ReadOnly: False
             SourceVolume: docker_var_lib_edico
-          - ContainerPath: "/usr/lib64/libdragen.so.4.4.4"
+          - ContainerPath: !Sub "/usr/lib64/libdragen.so.${DragenLibVersion}"
             ReadOnly: False
             SourceVolume: docker_usr_lib64
         Volumes:
@@ -391,7 +463,7 @@ Resources:
               SourcePath: "/var/lib/edico"
           - Name: docker_usr_lib64
             Host:
-              SourcePath: "/usr/lib64/libdragen.so.4.4.4"
+              SourcePath: !Sub "/usr/lib64/libdragen.so.${DragenLibVersion}"
 
 Outputs:
   DragenComputeEnvironmentSpot:
