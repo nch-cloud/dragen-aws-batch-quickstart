@@ -10,6 +10,8 @@ staging:
         - DragenVersion=444
         - DragenLibVersion=4.4.4
         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+        - KeyPairName=igm-dragen-batch
+        - MaxvCpus=1000
       tags:
         - IGM App=dragen-batch
         - IGM Group=both
@@ -27,6 +29,8 @@ prod:
         - DragenVersion=444
         - DragenLibVersion=4.4.4
         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+        - KeyPairName=igm-dragen-batch
+        - MaxvCpus=1000
       tags:
         - IGM App=dragen-batch
         - IGM Group=both
@@ -47,6 +51,8 @@ prod:
 #         - DragenLibVersion=4.5.4
 #         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
 #         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+#         - KeyPairName=igm-dragen-batch
+#         - MaxvCpus=1000
 #       tags:
 #         - IGM App=dragen-batch
 #         - IGM Group=both
@@ -66,6 +72,8 @@ prod:
 #         - DragenLibVersion=4.5.4
 #         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
 #         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+#         - KeyPairName=igm-dragen-batch
+#         - MaxvCpus=1000
 #       tags:
 #         - IGM App=dragen-batch
 #         - IGM Group=both
