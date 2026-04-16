@@ -473,9 +473,6 @@ Resources:
       Parameters:
         Bucket: !GetAtt DockerBucketRepository.Outputs.ArtifactBucket
         Repository: !GetAtt DockerBucketRepository.Outputs.Repository
-        QSS3BucketName: !Sub nch-igm-cloudformation-artifacts-257995316808-${AWS::Region}
-        QSS3KeyPrefix: dragen-aws-batch-quickstart/
-        QSS3BucketRegion: !Ref AWS::Region
         RoleArn: !GetAtt CleanupRole.Arn
 
 Outputs:
