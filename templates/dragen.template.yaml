@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 Description: This template deploys an environment to run Edico Genome's DRAGEN software using AWS Batch. (qs-1oqea624b)
 
 Metadata:
@@ -38,12 +39,6 @@ Metadata:
       - DesiredvCpus
       - GenomicsS3Bucket
       - RetryNumber
-    - Label:
-        default: AWS Quick Start Configuration
-      Parameters:
-      - QSS3BucketName
-      - QSS3BucketRegion
-      - QSS3KeyPrefix
     ParameterLabels:
       EnvironmentName:
         default: Environment Name
@@ -55,12 +50,6 @@ Metadata:
         default: DRAGEN AMI Override
       KeyPairName:
         default: Key Pair Name
-      QSS3BucketRegion:
-        default: Quick Start S3 bucket region
-      QSS3KeyPrefix:
-        default: Quick Start S3 Key Prefix
-      QSS3BucketName:
-        default: Quick Start S3 Bucket Name
       InstanceType:
         default: Instance Type
       BidPercentage:
@@ -116,28 +105,6 @@ Parameters:
     AllowedValues:
     - f2.6xlarge
     - f2.12xlarge
-  QSS3BucketName:
-    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
-    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
-      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
-      (-).
-    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
-      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
-      It cannot start or end with a hyphen (-).
-    Type: String
-  QSS3BucketRegion:
-    Default: 'us-east-1'
-    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
-    Type: String
-  QSS3KeyPrefix:
-    AllowedPattern: ^[0-9a-zA-Z-/]*$
-    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
-      uppercase letters, hyphens (-), and a forward slash (/) at the end of the prefix.
-    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
-      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
-      forward slash (/).
-    Default: prefix-to-template/
-    Type: String
   KeyPairName:
     Description: The name of an existing public/private key pair, which allows you
       to securely connect to your instance after it launches
@@ -202,28 +169,21 @@ Rules:
         regions to continue.
 
 Conditions:
-  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia']
   HasAmiOverride: !Not [!Equals [!Ref DragenAmiOverride, '']]
 
 Resources:
   DockerBucketRepository:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/docker-bucket-repository.template.yaml
-        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      TemplateURL: docker-bucket-repository.template.yaml
 
   CopyFiles:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/copy.template.yaml
-        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      TemplateURL: copy.template.yaml
       Parameters:
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        QSS3BucketName: !Sub nch-igm-cloudformation-artifacts-257995316808-${AWS::Region}
+        QSS3KeyPrefix: dragen-aws-batch-quickstart/
         DestinationBucket: !GetAtt DockerBucketRepository.Outputs.ArtifactBucket
 
   WaitHandleContainerBuild:
@@ -234,13 +194,10 @@ Resources:
     DependsOn:
     - CopyFiles
     Properties:
-      TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/container-build.template.yaml
-        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      TemplateURL: container-build.template.yaml
       Parameters:
         ArtifactBucket: !GetAtt DockerBucketRepository.Outputs.ArtifactBucket
-        ArtifactKey: !Ref QSS3KeyPrefix
+        ArtifactKey: dragen-aws-batch-quickstart/
         ServiceName: dragen
         Repository: !GetAtt DockerBucketRepository.Outputs.Repository
         WaitHandle: !Ref WaitHandleContainerBuild
@@ -261,10 +218,7 @@ Resources:
     - ContainerBuild
     - WaitConditionContainerBuild
     Properties:
-      TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/batch.template.yaml
-        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      TemplateURL: batch.template.yaml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         DragenVersion: !Ref DragenVersion
@@ -515,16 +469,13 @@ Resources:
   ContainerCleanup:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub
-        - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/clean-bucket-repository.template.yaml
-        - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-          S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+      TemplateURL: clean-bucket-repository.template.yaml
       Parameters:
         Bucket: !GetAtt DockerBucketRepository.Outputs.ArtifactBucket
         Repository: !GetAtt DockerBucketRepository.Outputs.Repository
-        QSS3BucketName: !Ref QSS3BucketName
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        QSS3BucketRegion: !Ref QSS3BucketRegion
+        QSS3BucketName: !Sub nch-igm-cloudformation-artifacts-257995316808-${AWS::Region}
+        QSS3KeyPrefix: dragen-aws-batch-quickstart/
+        QSS3BucketRegion: !Ref AWS::Region
         RoleArn: !GetAtt CleanupRole.Arn
 
 Outputs:

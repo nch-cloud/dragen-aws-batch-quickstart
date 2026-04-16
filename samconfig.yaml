@@ -9,8 +9,7 @@ staging:
         - EnvironmentName=staging
         - DragenVersion=444
         - DragenLibVersion=4.4.4
-        - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
-        - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
       tags:
         - IGM App=dragen-batch
         - IGM Group=both
@@ -27,8 +26,7 @@ prod:
         - EnvironmentName=prod
         - DragenVersion=444
         - DragenLibVersion=4.4.4
-        - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
-        - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
       tags:
         - IGM App=dragen-batch
         - IGM Group=both
@@ -48,8 +46,7 @@ prod:
 #         - DragenVersion=454
 #         - DragenLibVersion=4.5.4
 #         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
-#         - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
-#         - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+#         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
 #       tags:
 #         - IGM App=dragen-batch
 #         - IGM Group=both
@@ -68,8 +65,7 @@ prod:
 #         - DragenVersion=454
 #         - DragenLibVersion=4.5.4
 #         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
-#         - QSS3BucketName=nch-igm-cloudformation-artifacts-257995316808-us-east-1
-#         - QSS3KeyPrefix=dragen-aws-batch-quickstart/
+#         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
 #       tags:
 #         - IGM App=dragen-batch
 #         - IGM Group=both

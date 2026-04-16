@@ -4,15 +4,22 @@ phases:
     runtime-versions:
       python: 3.12
     commands:
-      - aws codeartifact login --tool pip --repository igm-pypi-store --domain igm --domain-owner 257995316808 --region us-east-2
-      - pip install nch-devops-cli==0.2.0.post2.dev0+749d37d
+      - pip install aws-sam-cli
   build:
     commands:
-      - echo Entered the build and package phase...
-      - echo Syncing templates and app to S3 artifacts bucket...
-      - aws s3 sync templates/ s3://nch-igm-cloudformation-artifacts-257995316808-us-east-1/dragen-aws-batch-quickstart/templates/
-      - aws s3 sync app/ s3://nch-igm-cloudformation-artifacts-257995316808-us-east-1/dragen-aws-batch-quickstart/app/
+      - echo Entered the build and deploy phase...
+      - echo Sam building...
+      - sam build --template-file templates/dragen.template.yaml
+      - echo Sam packaging...
+      - |
+        sam package \
+          --s3-bucket nch-igm-cloudformation-artifacts-257995316808-us-east-1 \
+          --s3-prefix dragen-aws-batch-quickstart \
+          --output-template-file cf_template.yaml \
+          --force-upload
 artifacts:
   files:
+    - cf_template.yaml
     - samconfig.yaml
     - cicd/*
+    - app/**/*
