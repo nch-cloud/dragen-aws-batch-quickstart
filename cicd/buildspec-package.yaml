@@ -17,6 +17,8 @@ phases:
           --s3-prefix dragen-aws-batch-quickstart \
           --output-template-file cf_template.yaml \
           --force-upload
+      - echo Uploading dragen.zip to S3 artifacts bucket...
+      - aws s3 cp app/packages/dragen/dragen.zip s3://nch-igm-cloudformation-artifacts-257995316808-us-east-1/dragen-aws-batch-quickstart/app/packages/dragen/dragen.zip
 artifacts:
   files:
     - cf_template.yaml
