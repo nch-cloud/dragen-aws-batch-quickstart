@@ -39,7 +39,7 @@ version: 0.1
 #         - IGM Sub-Billing=dragen-batch
 
 # Uncomment to deploy DRAGEN 4.5.4:
-staging-454:
+staging:
   deploy:
     parameters:
       stack_name: dragen-staging-454
@@ -60,7 +60,7 @@ staging-454:
         - IGM Billing=strategic
         - IGM Sub-Billing=dragen-batch
 
-prod-454:
+prod:
   deploy:
     parameters:
       stack_name: dragen-prod-454
