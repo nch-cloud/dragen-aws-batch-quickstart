@@ -10,7 +10,7 @@ staging:
         - DragenVersion=444
         - DragenLibVersion=4.4.4
         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-        - KeyPairName=igm-dragen-batch
+        - KeyPairName=igm-dragen-us-east-1 
         - MaxvCpus=1000
       tags:
         - IGM App=dragen-batch
@@ -29,7 +29,7 @@ prod:
         - DragenVersion=444
         - DragenLibVersion=4.4.4
         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-        - KeyPairName=igm-dragen-batch
+        - KeyPairName=igm-dragen-us-east-1 
         - MaxvCpus=1000
       tags:
         - IGM App=dragen-batch
