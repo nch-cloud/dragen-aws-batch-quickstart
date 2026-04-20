@@ -1,7 +1,7 @@
 version: 0.1
 
-# DRAGEN 4.4.4 — Pipeline $ENV=staging-444
-staging-a:
+#DRAGEN 4.4.4 — Pipeline $ENV=staging-444
+staging:
   deploy:
     parameters:
       stack_name: dragen-staging-444
@@ -22,7 +22,7 @@ staging-a:
         - IGM Sub-Billing=dragen-batch
 
 # DRAGEN 4.4.4 — Pipeline $ENV=prod-444
-prod-a:
+prod:
   deploy:
     parameters:
       stack_name: dragen-prod-444
@@ -43,45 +43,45 @@ prod-a:
         - IGM Sub-Billing=dragen-batch
 
 # DRAGEN 4.5.4 — Pipeline $ENV=staging-454
-staging-b:
-  deploy:
-    parameters:
-      stack_name: dragen-staging-454
-      region: us-east-1
-      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
-      parameter_overrides:
-        - EnvironmentName=staging
-        - DragenVersion=454
-        - DragenLibVersion=4.5.4
-        - DragenAmiOverride=ami-0de1a56afe1c3b0b8
-        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-        - KeyPairName=igm-dragen-us-east-1
-        - MaxvCpus=1000
-      tags:
-        - IGM App=dragen-batch
-        - IGM Group=both
-        - IGM Environment=staging
-        - IGM Billing=strategic
-        - IGM Sub-Billing=dragen-batch
+# staging:
+#   deploy:
+#     parameters:
+#       stack_name: dragen-staging-454
+#       region: us-east-1
+#       capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+#       parameter_overrides:
+#         - EnvironmentName=staging
+#         - DragenVersion=454
+#         - DragenLibVersion=4.5.4
+#         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+#         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+#         - KeyPairName=igm-dragen-us-east-1
+#         - MaxvCpus=1000
+#       tags:
+#         - IGM App=dragen-batch
+#         - IGM Group=both
+#         - IGM Environment=staging
+#         - IGM Billing=strategic
+#         - IGM Sub-Billing=dragen-batch
 
-# DRAGEN 4.5.4 — Pipeline $ENV=prod-454
-prod-b:
-  deploy:
-    parameters:
-      stack_name: dragen-prod-454
-      region: us-east-1
-      capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
-      parameter_overrides:
-        - EnvironmentName=prod
-        - DragenVersion=454
-        - DragenLibVersion=4.5.4
-        - DragenAmiOverride=ami-0de1a56afe1c3b0b8
-        - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
-        - KeyPairName=igm-dragen-us-east-1
-        - MaxvCpus=1000
-      tags:
-        - IGM App=dragen-batch
-        - IGM Group=both
-        - IGM Environment=prod
-        - IGM Billing=strategic
-        - IGM Sub-Billing=dragen-batch
+# # DRAGEN 4.5.4 — Pipeline $ENV=prod-454
+# prod:
+#   deploy:
+#     parameters:
+#       stack_name: dragen-prod-454
+#       region: us-east-1
+#       capabilities: CAPABILITY_IAM CAPABILITY_NAMED_IAM
+#       parameter_overrides:
+#         - EnvironmentName=prod
+#         - DragenVersion=454
+#         - DragenLibVersion=4.5.4
+#         - DragenAmiOverride=ami-0de1a56afe1c3b0b8
+#         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
+#         - KeyPairName=igm-dragen-us-east-1
+#         - MaxvCpus=1000
+#       tags:
+#         - IGM App=dragen-batch
+#         - IGM Group=both
+#         - IGM Environment=prod
+#         - IGM Billing=strategic
+#         - IGM Sub-Billing=dragen-batch
