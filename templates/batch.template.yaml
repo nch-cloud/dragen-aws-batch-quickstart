@@ -423,7 +423,7 @@ Resources:
   DragenJobDefinition:
     Type: AWS::Batch::JobDefinition
     Properties:
-      JobDefinitionName: !Sub dragen-${EnvironmentName}-${DragenVersion}
+      JobDefinitionName: !Sub igm-dragen-${EnvironmentName}-${DragenVersion}
       Type: container
       RetryStrategy:
         Attempts: !Ref RetryNumber
