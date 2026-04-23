@@ -150,6 +150,15 @@ Resources:
         FromPort: 443
         ToPort: 443
         CidrIp: 0.0.0.0/0
+  BatchSecurityGroupEcsCredentialEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref BatchSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: 169.254.170.2/32
+      Description: Allow ECS task credential endpoint access
   BatchServiceRole:
     Type: AWS::IAM::Role
     Properties:
