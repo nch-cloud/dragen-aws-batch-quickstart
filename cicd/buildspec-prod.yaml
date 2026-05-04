@@ -12,17 +12,13 @@ phases:
       - nch-devops-cli codebuild-pre-deploy-get-parameters --sam-config-env $ENV
       - nch-devops-cli codebuild-pre-deploy-check-cf-stack-set --sam-config-env $ENV --template-file cf_template.yaml
       # Zip dragen wrapper scripts and upload to stack's artifact S3 bucket
-      - STACK_NAME=$(python3 -c "import yaml; c=yaml.safe_load(open('samconfig.yaml')); print(c['$ENV']['deploy']['parameters']['stack_name'])" 2>/dev/null || echo "")
+      - ARTIFACT_BUCKET="stackset-dragen-aws-batch-quickstar-artifactbucket-otqloy1zsv5i"
       - |
-        if [ -n "$STACK_NAME" ]; then
-          ARTIFACT_BUCKET=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`ArtifactBucket`].OutputValue' --output text 2>/dev/null || echo "")
-          if [ -n "$ARTIFACT_BUCKET" ]; then
-            cd app/source/dragen
-            zip -r ../../../dragen.zip .
-            cd ../../..
-            aws s3 cp dragen.zip s3://$ARTIFACT_BUCKET/dragen-aws-batch-quickstart/app/packages/dragen/dragen.zip
-          fi
-        fi
+        cd app/source/dragen
+        zip -r ../../../dragen.zip .
+        cd ../../..
+        echo "Uploading dragen.zip to s3://$ARTIFACT_BUCKET/dragen-aws-batch-quickstart/app/packages/dragen/dragen.zip"
+        aws s3 cp dragen.zip s3://$ARTIFACT_BUCKET/dragen-aws-batch-quickstart/app/packages/dragen/dragen.zip
 artifacts:
   files:
     - cf_template.yaml
