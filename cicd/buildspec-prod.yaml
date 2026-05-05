@@ -14,9 +14,9 @@ phases:
       # Zip dragen wrapper scripts and upload to stack's artifact S3 bucket
       - ARTIFACT_BUCKET="stackset-dragen-aws-batch-quickstar-artifactbucket-otqloy1zsv5i"
       - |
-        cd app/source/dragen
-        zip -r ../../../dragen.zip .
-        cd ../../..
+        cd app/source
+        zip -r ../../dragen.zip dragen/
+        cd ../..
         echo "Uploading dragen.zip to s3://$ARTIFACT_BUCKET/dragen-aws-batch-quickstart/app/packages/dragen/dragen.zip"
         aws s3 cp dragen.zip s3://$ARTIFACT_BUCKET/dragen-aws-batch-quickstart/app/packages/dragen/dragen.zip
 artifacts:
