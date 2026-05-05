@@ -11,6 +11,7 @@ staging:
         - EnvironmentName=staging
         - DragenVersion=444
         - DragenLibVersion=4.4.4
+        - DragenAmiOverride=ami-0be774adf94c2531a
         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
         - KeyPairName=igm-dragen-us-east-1
         - MaxvCpus=1000
@@ -32,6 +33,7 @@ prod:
         - EnvironmentName=prod
         - DragenVersion=444
         - DragenLibVersion=4.4.4
+        - DragenAmiOverride=ami-0be774adf94c2531a
         - GenomicsS3Bucket=nch-igm-fastq-clinical-dragen
         - KeyPairName=igm-dragen-us-east-1
         - MaxvCpus=1000
