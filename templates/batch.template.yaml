@@ -289,11 +289,12 @@ Resources:
   DragenComputeEnvironmentSpot:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-spot
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-spot-v2
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
       ComputeResources:
+        AllocationStrategy: SPOT_CAPACITY_OPTIMIZED
         BidPercentage: !Ref BidPercentage
         Ec2KeyPair: !Ref Ec2KeyPair
         ImageId: !Ref ImageId
@@ -312,11 +313,12 @@ Resources:
   DragenComputeEnvironmentOnDemand:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-ondemand
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-ondemand-v2
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
       ComputeResources:
+        AllocationStrategy: BEST_FIT_PROGRESSIVE
         Ec2KeyPair: !Ref Ec2KeyPair
         ImageId: !Ref ImageId
         InstanceRole: !Ref DragenInstanceRole
