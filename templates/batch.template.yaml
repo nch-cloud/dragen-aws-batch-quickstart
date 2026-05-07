@@ -289,7 +289,7 @@ Resources:
   DragenComputeEnvironmentSpot:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-spot-v2
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-spot-v3
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
@@ -313,7 +313,7 @@ Resources:
   DragenComputeEnvironmentOnDemand:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-ondemand-v2
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-ondemand-v3
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
