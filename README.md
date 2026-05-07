@@ -22,3 +22,21 @@ For architectural details, best practices, step-by-step instructions, and custom
 
 To post feedback, submit feature ideas, or report bugs, use the **Issues** section of this GitHub repo.
 If you'd like to submit code for this Quick Start, please review the [AWS Quick Start Contributor's Kit](https://aws-quickstart.github.io/). 
+
+## Known Issues & Important Notes
+
+### Security Group Egress Rules (Critical)
+
+The Batch compute environment security group in `templates/batch.template.yaml` **must** include egress rules for HTTP, DNS, and NTP in addition to HTTPS. Without these, containers will experience intermittent or consistent exit code 137 (SIGKILL) failures due to:
+
+- **TCP 80**: Required for the ECS task credential endpoint (`169.254.170.2:80`). Without this, containers lose the ability to refresh IAM credentials mid-run, causing S3 streaming failures during long-running jobs.
+- **UDP 53**: Required for DNS resolution. Without this, containers may fail to resolve S3 endpoints or the DRAGEN license server.
+- **UDP 123**: Required for NTP time synchronization.
+
+The original `igm-dragen-batch` stack had these rules added manually at deploy time but they were never committed to this repository. The upstream Illumina quickstart template only includes TCP 443, which is insufficient for production DRAGEN workloads.
+
+**Symptoms of missing rules**: Exit code 137 errors that appear to be OOM kills but are actually caused by network timeouts. Jobs may succeed intermittently (when credentials are still cached) and fail on longer-running samples.
+
+### DRAGEN AMI and f2.12xlarge Compatibility
+
+The DRAGEN 4.5.4 private AMI (`ami-0de1a56afe1c3b0b8`) does **not** properly support `f2.12xlarge` instances (dual FPGA boards). Board1 fails to initialize with `HWAL error: Timeout during last indirect operation -- indirect control register 0xf000 = 0xdeadbeef`. Only use `f2.6xlarge` with this AMI until Illumina provides a validated multi-board image.

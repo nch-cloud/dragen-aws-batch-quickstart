@@ -150,6 +150,18 @@ Resources:
         FromPort: 443
         ToPort: 443
         CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: udp
+        FromPort: 53
+        ToPort: 53
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: udp
+        FromPort: 123
+        ToPort: 123
+        CidrIp: 0.0.0.0/0
   BatchServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -289,7 +301,7 @@ Resources:
   DragenComputeEnvironmentSpot:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-spot-v3
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-spot-v4
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
@@ -299,7 +311,7 @@ Resources:
         Ec2KeyPair: !Ref Ec2KeyPair
         ImageId: !Ref ImageId
         InstanceRole: !Ref DragenInstanceRole
-        InstanceTypes: [f2.6xlarge, f2.12xlarge]
+        InstanceTypes: [f2.6xlarge]
         MinvCpus: !Ref MinvCpus
         DesiredvCpus: !Ref DesiredvCpus
         MaxvCpus: !Ref MaxvCpus
@@ -313,7 +325,7 @@ Resources:
   DragenComputeEnvironmentOnDemand:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-ondemand-v3
+      ComputeEnvironmentName: !Sub dragen-${EnvironmentName}-${DragenVersion}-ondemand-v4
       ServiceRole: !Ref BatchServiceRole
       Type: MANAGED
       State: ENABLED
@@ -322,7 +334,7 @@ Resources:
         Ec2KeyPair: !Ref Ec2KeyPair
         ImageId: !Ref ImageId
         InstanceRole: !Ref DragenInstanceRole
-        InstanceTypes: [f2.6xlarge, f2.12xlarge]
+        InstanceTypes: [f2.6xlarge]
         MinvCpus: !Ref MinvCpus
         DesiredvCpus: !Ref DesiredvCpus
         MaxvCpus: !Ref MaxvCpus
