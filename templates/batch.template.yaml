@@ -299,7 +299,7 @@ Resources:
         Ec2KeyPair: !Ref Ec2KeyPair
         ImageId: !Ref ImageId
         InstanceRole: !Ref DragenInstanceRole
-        InstanceTypes: [!Ref InstanceType]
+        InstanceTypes: [f2.6xlarge, f2.12xlarge]
         MinvCpus: !Ref MinvCpus
         DesiredvCpus: !Ref DesiredvCpus
         MaxvCpus: !Ref MaxvCpus
@@ -322,7 +322,7 @@ Resources:
         Ec2KeyPair: !Ref Ec2KeyPair
         ImageId: !Ref ImageId
         InstanceRole: !Ref DragenInstanceRole
-        InstanceTypes: [!Ref InstanceType]
+        InstanceTypes: [f2.6xlarge, f2.12xlarge]
         MinvCpus: !Ref MinvCpus
         DesiredvCpus: !Ref DesiredvCpus
         MaxvCpus: !Ref MaxvCpus
