@@ -435,6 +435,12 @@ class DragenJob(object):
             except Exception as e:
                 raise RuntimeError(f'Error extracting tar file: {e}')
 
+            # Remove tarball to free disk space
+            try:
+                os.remove(ref_tar_path)
+                print(f'Removed tarball {ref_tar_path} to free disk space')
+            except OSError:
+                pass
 
             self.ref_dir = ref_dir
 
